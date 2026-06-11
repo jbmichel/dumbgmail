@@ -101,8 +101,11 @@ def ensure_labels(gmail, label_names: list[str]) -> dict[str, str]:
     return by_name
 
 
-def add_label(gmail, msg_id: str, label_id: str) -> None:
-    """Apply a label. Does NOT remove INBOX or UNREAD — no archiving."""
+def set_triage_label(gmail, msg_id: str, label_id: str, all_triage_ids: list[str]) -> None:
+    """Set exactly one Triage/* label, removing any others already on the message."""
+    remove = [lid for lid in all_triage_ids if lid != label_id]
     gmail.users().messages().modify(
-        userId="me", id=msg_id, body={"addLabelIds": [label_id]}
+        userId="me",
+        id=msg_id,
+        body={"addLabelIds": [label_id], "removeLabelIds": remove},
     ).execute()

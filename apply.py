@@ -15,7 +15,7 @@ import sys
 import config
 import corrections
 from auth import build_services
-from gmail_client import add_label, ensure_labels
+from gmail_client import ensure_labels, set_triage_label
 from pipeline import print_report, triage
 
 LAST_RUN_FILE = "last_run.json"
@@ -63,10 +63,11 @@ def main() -> None:
 
     print("\nApplying labels...")
     label_ids = ensure_labels(gmail, list(config.LABELS.values()))
+    all_triage_ids = list(label_ids.values())
     applied = 0
     for r in records:
         label_name = config.LABELS[config.BUCKET_TO_LABEL[r["bucket"]]]
-        add_label(gmail, r["id"], label_ids[label_name])
+        set_triage_label(gmail, r["id"], label_ids[label_name], all_triage_ids)
         applied += 1
     print(f"Done — applied {applied} label(s). Nothing was archived or marked read.")
 

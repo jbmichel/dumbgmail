@@ -14,24 +14,21 @@ from googleapiclient.discovery import build
 import config
 
 
-def _seed_token_from_env() -> None:
-    """Write token.json from GOOGLE_TOKEN_JSON env var if the file doesn't exist.
-
-    This lets Railway pick up the token on first deploy without a browser flow.
-    Once written to the volume, subsequent runs refresh it in place.
-    """
-    if os.path.exists(config.TOKEN_FILE):
+def _seed_from_env(env_var: str, dest_path: str) -> None:
+    """Write a file from an env var if the file doesn't exist."""
+    if os.path.exists(dest_path):
         return
-    token_json = os.environ.get("GOOGLE_TOKEN_JSON")
-    if not token_json:
+    value = os.environ.get(env_var)
+    if not value:
         return
-    os.makedirs(os.path.dirname(config.TOKEN_FILE), exist_ok=True)
-    with open(config.TOKEN_FILE, "w") as f:
-        f.write(token_json)
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+    with open(dest_path, "w") as f:
+        f.write(value)
 
 
 def get_credentials() -> Credentials:
-    _seed_token_from_env()
+    _seed_from_env("GOOGLE_CREDENTIALS_JSON", config.CREDENTIALS_FILE)
+    _seed_from_env("GOOGLE_TOKEN_JSON", config.TOKEN_FILE)
 
     creds = None
     if os.path.exists(config.TOKEN_FILE):

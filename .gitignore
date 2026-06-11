@@ -1,0 +1,13 @@
+# Secrets & local state — never commit
+credentials.json
+token.json
+allowlist.json
+last_run.json
+reviewed.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env

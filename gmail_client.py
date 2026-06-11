@@ -98,7 +98,7 @@ def ensure_labels(gmail, label_names: list[str]) -> dict[str, str]:
                 .execute()
             )
             by_name[name] = created["id"]
-    return by_name
+    return {name: by_name[name] for name in label_names}
 
 
 def set_triage_label(gmail, msg_id: str, label_id: str, all_triage_ids: list[str]) -> None:

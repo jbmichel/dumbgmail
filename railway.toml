@@ -2,4 +2,3 @@
 builder = "dockerfile"
 
 [deploy]
-cronSchedule = "*/15 * * * *"

@@ -13,6 +13,7 @@ import os
 import sys
 
 import config
+import corrections
 from auth import build_services
 from gmail_client import add_label, ensure_labels
 from pipeline import print_report, triage
@@ -26,6 +27,9 @@ def main() -> None:
 
     print("Authenticating...")
     gmail, people, calendar = build_services()
+
+    print("Checking for label corrections...")
+    corrections.check_and_learn(gmail)
 
     if from_last:
         if not os.path.exists(LAST_RUN_FILE):
@@ -65,6 +69,9 @@ def main() -> None:
         add_label(gmail, r["id"], label_ids[label_name])
         applied += 1
     print(f"Done — applied {applied} label(s). Nothing was archived or marked read.")
+
+    existing = corrections.load_applied()
+    corrections.save_applied(existing, records)
 
 
 if __name__ == "__main__":

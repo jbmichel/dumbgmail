@@ -11,9 +11,33 @@ A hit here means "definitely known" and skips the LLM entirely.
 
 import json
 import os
+from datetime import datetime, timezone, timedelta
 from email.utils import getaddresses
 
 import config
+
+_CACHE_TTL = timedelta(hours=config.KNOWN_SENDERS_CACHE_TTL_HOURS)
+
+
+def _cache_is_fresh() -> bool:
+    if not os.path.exists(config.KNOWN_SENDERS_CACHE_FILE):
+        return False
+    with open(config.KNOWN_SENDERS_CACHE_FILE) as f:
+        data = json.load(f)
+    refreshed_at = datetime.fromisoformat(data.get("refreshed_at", "2000-01-01T00:00:00+00:00"))
+    if refreshed_at.tzinfo is None:
+        refreshed_at = refreshed_at.replace(tzinfo=timezone.utc)
+    return datetime.now(timezone.utc) - refreshed_at < _CACHE_TTL
+
+
+def _load_cache() -> set[str]:
+    with open(config.KNOWN_SENDERS_CACHE_FILE) as f:
+        return set(json.load(f).get("emails", []))
+
+
+def _save_cache(emails: set[str]) -> None:
+    with open(config.KNOWN_SENDERS_CACHE_FILE, "w") as f:
+        json.dump({"emails": sorted(emails), "refreshed_at": datetime.now(timezone.utc).isoformat()}, f)
 
 
 def _emails_from_header_value(value: str) -> list[str]:
@@ -129,17 +153,22 @@ def add_to_allowlist(email: str) -> None:
 
 
 def build_known_set(gmail, people, calendar) -> set[str]:
-    known: set[str] = set()
-    for label, fn, svc in (
-        ("sent mail", from_sent_mail, gmail),
-        ("contacts", from_contacts, people),
-        ("calendar", from_calendar, calendar),
-        ("allowlist", lambda _: load_allowlist(), None),
-    ):
-        try:
-            found = fn(svc)
-            known |= found
-            print(f"  known from {label}: {len(found)}")
-        except Exception as e:  # one source failing shouldn't sink the run
-            print(f"  WARNING: could not read {label}: {e}")
+    if _cache_is_fresh():
+        known = _load_cache()
+        print(f"  known senders: {len(known)} (from cache)")
+    else:
+        known: set[str] = set()
+        for label, fn, svc in (
+            ("sent mail", from_sent_mail, gmail),
+            ("contacts", from_contacts, people),
+            ("calendar", from_calendar, calendar),
+        ):
+            try:
+                found = fn(svc)
+                known |= found
+                print(f"  known from {label}: {len(found)}")
+            except Exception as e:
+                print(f"  WARNING: could not read {label}: {e}")
+        _save_cache(known)
+        print(f"  known senders total: {len(known)} (cache refreshed)")
     return known

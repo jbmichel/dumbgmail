@@ -4,6 +4,8 @@ token.json
 allowlist.json
 last_run.json
 reviewed.json
+known_senders_cache.json
+applied_labels.json
 
 # Python
 __pycache__/

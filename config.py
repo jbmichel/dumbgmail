@@ -51,19 +51,17 @@ MODEL = "claude-haiku-4-5"
 
 # --- Gmail labels we propose (label-only; we never archive) ------------------
 LABELS = {
-    "people": "Triage/People",          # real people you know -> primary view
-    "urgent": "Triage/Urgent",          # today-urgent admin -> primary view
-    "digest_admin": "Triage/Digest-Admin",  # non-urgent admin -> daily digest
-    "digest_fyi": "Triage/Digest-FYI",       # worth a daily glance -> daily digest
-    "other": "Triage/Other",            # bulk lists you'll never read -> NOT in digest
+    "people": "Triage/People",    # real people you know -> primary view
+    "urgent": "Triage/Urgent",    # today-urgent admin -> primary view
+    "digest": "Triage/Digest",    # everything else worth a daily glance
+    "other": "Triage/Other",      # bulk lists you'll never read -> not shown
 }
 
 # Map a classifier bucket to a Gmail label key above.
 BUCKET_TO_LABEL = {
     "people": "people",
     "urgent_admin": "urgent",
-    "digest_admin": "digest_admin",
-    "digest_fyi": "digest_fyi",
+    "digest": "digest",
     "other": "other",
 }
 
@@ -92,7 +90,19 @@ ALLOWLIST_FILE = _os.path.join(_DATA_DIR, "allowlist.json")
 SENT_LOOKBACK_QUERY = "in:sent newer_than:2y"
 SENT_MAX_MESSAGES = 2000
 
-# Which unread mail to triage. Scoped to Gmail's Primary tab so Gmail's own
-# category tabs handle Promotions/Social/Updates and we focus on what matters.
-UNREAD_QUERY = "in:inbox category:primary is:unread"
-UNREAD_MAX_MESSAGES = 250  # safety cap; current Primary unread is ~119
+# Everything in Primary inbox not yet labeled by us — catches read and unread.
+TRIAGE_QUERY = (
+    "in:inbox category:primary"
+    " -label:Triage/People"
+    " -label:Triage/Urgent"
+    " -label:Triage/Digest"
+    " -label:Triage/Other"
+)
+TRIAGE_MAX_MESSAGES = 250  # safety cap
+
+# Known-senders cache
+KNOWN_SENDERS_CACHE_FILE = _os.path.join(_DATA_DIR, "known_senders_cache.json")
+KNOWN_SENDERS_CACHE_TTL_HOURS = 6
+
+# Applied-labels log (for learning from user corrections)
+APPLIED_LABELS_FILE = _os.path.join(_DATA_DIR, "applied_labels.json")

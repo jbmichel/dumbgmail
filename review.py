@@ -30,17 +30,16 @@ import known_senders
 LAST_RUN_FILE = "last_run.json"
 REVIEWED_FILE = "reviewed.json"
 
-KEYMAP = {  # keypress -> fine-grained bucket
+KEYMAP = {  # keypress -> bucket
     "p": "people",
     "u": "urgent_admin",
-    "d": "digest_fyi",
+    "d": "digest",
     "o": "other",
 }
 COARSE = {
     "people": "PEOPLE",
     "urgent_admin": "URGENT",
-    "digest_admin": "DIGEST",
-    "digest_fyi": "DIGEST",
+    "digest": "DIGEST",
     "other": "OTHER ",
 }
 _NON_PERSON = ("noreply", "no-reply", "donotreply", "do-not-reply")

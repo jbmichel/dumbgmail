@@ -18,19 +18,15 @@ _client = anthropic.Anthropic()
 
 
 class Classification(BaseModel):
-    bucket: Literal[
-        "people", "urgent_admin", "digest_admin", "digest_fyi", "other"
-    ] = Field(
+    bucket: Literal["people", "urgent_admin", "digest", "other"] = Field(
         description=(
             "people = a real individual human writing to you personally; "
             "urgent_admin = household/kids admin needing action TODAY "
             "(appointment to confirm, tax/investment deadline, construction, "
             "time-sensitive school item); "
-            "digest_admin = household/kids admin that is NOT urgent today; "
-            "digest_fyi = informational/transactional mail worth a quick daily "
-            "glance (receipts, payment/account confirmations, statements, "
-            "security/account notices, broadcasts from orgs you belong to like "
-            "your kids' school); "
+            "digest = all other mail worth a daily glance — admin, receipts, "
+            "account/payment notices, security alerts, school broadcasts, "
+            "informational newsletters from orgs you belong to; "
             "other = bulk promotional/marketing/sales and brand/retail/newsletter "
             "lists you don't engage with and will likely never read."
         )
@@ -86,28 +82,22 @@ GUIDANCE:
 - 'urgent_admin' is RARE: only household/kids items that must be acted on TODAY —
   a real same-day deadline or a time-critical request. Routine appointment
   confirmations and "your appointment is coming up" reminders are NOT urgent ->
-  digest_fyi. When unsure between urgent and non-urgent, choose digest.
-- Within non-personal mail, distinguish digest_fyi from other:
-    * digest_fyi: payment receipts, security alerts, and broadcasts from orgs the
-      user actively belongs to (e.g. the kids' school parent association).
-    * other: routine "account summary / statement is available" notices (toll
-      accounts, domain registrars, etc.), service welcome/onboarding emails, and
-      all brand/retail/newsletter marketing.
-- Distinguish 'digest_fyi' from 'other':
-    * digest_fyi = informational/transactional mail tied to services, accounts, or
-      organizations the user actually uses or belongs to, and is worth a quick
-      daily glance. Examples: a payment receipt, an account/statement notice, a
-      security alert, a broadcast from the kids' school community.
+  digest. When unsure between urgent and non-urgent, choose digest.
+- Distinguish 'digest' from 'other':
+    * digest = informational/transactional mail tied to services, accounts, or
+      organizations the user actually uses or belongs to. Examples: payment
+      receipts, account/security notices, school broadcasts, admin mail that
+      isn't urgent today.
     * other = bulk promotional, marketing, sales, and brand/retail/newsletter
       lists the user does not engage with and will likely never read. Examples:
       retail sale emails, streaming-service promos, commercial real-estate blasts,
-      generic brand newsletters. These are excluded from the digest entirely.
-  Rule of thumb: a receipt or account notice from a service the user uses ->
-  digest_fyi; a marketing blast from a brand -> other.
-- The user reads the 'people' and 'urgent_admin' buckets in their primary inbox;
-  'digest_admin' and 'digest_fyi' go into a once-daily digest; 'other' is filed
-  away and not shown. Optimize above all for not burying real humans or genuinely
-  time-sensitive items, and for keeping pure marketing out of the digest."""
+      generic brand newsletters.
+  Rule of thumb: a receipt or notice from a service the user uses -> digest;
+  a marketing blast from a brand -> other.
+- The user reads 'people' and 'urgent_admin' in their primary inbox; 'digest'
+  goes into a once-daily digest; 'other' is filed away and not shown. Optimize
+  above all for not burying real humans or genuinely time-sensitive items, and
+  for keeping pure marketing out of the digest."""
 
 
 def classify(msg: dict, sender_is_known: bool = False) -> Classification:

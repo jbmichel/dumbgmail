@@ -6,7 +6,7 @@ import known_senders
 from classifier import classify
 from gmail_client import fetch_unread
 
-REPORT_ORDER = ["people", "urgent", "digest_admin", "digest_fyi", "other"]
+REPORT_ORDER = ["people", "urgent", "digest", "other"]
 
 
 def triage(gmail, people, calendar) -> list[dict]:

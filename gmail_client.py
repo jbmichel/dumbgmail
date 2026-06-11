@@ -20,14 +20,14 @@ def fetch_unread(gmail) -> list[dict]:
     """
     refs = []
     page_token = None
-    while len(refs) < config.UNREAD_MAX_MESSAGES:
+    while len(refs) < config.TRIAGE_MAX_MESSAGES:
         resp = (
             gmail.users()
             .messages()
             .list(
                 userId="me",
-                q=config.UNREAD_QUERY,
-                maxResults=min(500, config.UNREAD_MAX_MESSAGES - len(refs)),
+                q=config.TRIAGE_QUERY,
+                maxResults=min(500, config.TRIAGE_MAX_MESSAGES - len(refs)),
                 pageToken=page_token,
             )
             .execute()
